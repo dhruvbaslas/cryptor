@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!-- HTML Start -->
+<html>
+    <!-- Head Start -->
+    <head>
+        <title> Message Cryptor </title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+        <style>
+            body {
+                background: #f5f6f8;
+                overflow-y:auto;
+				height: 100%;
+				overflow-x: scroll;
+            }
+            .form-style {
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+				height: 100%;
+				overflow-x: scroll;
+            }
+            .card {
+                width: 640px;
+                border: none;
+                background: #fff;
+                padding: 40px;
+                box-shadow: 0 2px 32px rgba(0,0,0, 0.1);
+                border-radius:0.4rem;
+				height: 100%;
+				overflow-x: scroll;
+            }
+            .form-control {
+                margin-bottom: 1.5rem;
+            }
+        </style>
+    </head>
+    <!-- Head End -->
+
+    <!-- Body Start-->
+    <body>
+        
+        <div class="form-style">
+        <h1>Encrypt/Decrypt Your Messages</h1>
+        <div class="card">
+        <textarea id="message" rows="8" type="text" class="form-control" style="resize: none;" placeholder="Enter Your Message To Encrypt or Decrypt" required></textarea>
+        Enter Your Own Key Or Get A Random Key
+        <br><br>
+        <input id="key" type="text" maxlength="6" class="form-control form-control-lg" placeholder="Enter Anything (character, number, symbol)"  required>
+
+        <div class="d-flex">
+
+        <button onclick="handleRandom()" class="btn btn-primary btn-lg mr-3">Get Random Key</button>
+
+        <button onclick="handleEncrypt()" class="btn btn-primary btn-lg mr-3">Encrypt</button>
+
+        <button onclick="handleDecrypt()" class="btn btn-danger btn-lg">Decrypt</button>
+    </div>
+
+        <p id="output" class="alert alert-success mt-3"></p>
+    </div>
+    </div>
+    </body>
+    <!-- Body End -->
+
+    <!-- Footer Start -->
+    <footer>
+            <script>
+                function handleRandom() {
+                    var rand_key = Math.floor(Math.random() * 100000);
+                    var output_p =  document.getElementById("key");
+                    output_p.value = rand_key;
+                }
+                function processKey(key){
+                    var key = document.getElementById("key").value;
+                    var key_arr = [];
+                    for(var i=0; i < key.length; i++ ){
+                        var val = key[i];
+                        if(isNaN(val)){
+                            var char_val = key.charCodeAt(i);
+                            var count = char_val.toString().length;
+                            key_arr.push(char_val);
+                        }
+                        else{
+                            key_arr.push(val);
+                        }
+                    }
+                    var new_key = key_arr.join('');
+                    return new_key;
+                }
+                function handleEncrypt() {
+                    var key = document.getElementById("key").value;
+                    var message = document.getElementById("message").value;
+                    var key = processKey(key);
+                    if(key!=0){
+                        var encrypted_message = encrypt(key, message);
+                    }
+                    else{
+                        var encrypted_message = "You Cannot Take Key As (0)(zero)(knot)";
+                    }
+                    var output_p =  document.getElementById("output");
+                    output_p.innerHTML = encrypted_message;
+                }
+                function handleDecrypt() {
+                    var key = document.getElementById("key").value;
+                    var message = document.getElementById("message").value;
+                    var key = processKey(key);
+                    var decrypted_message = decrypt(key, message);
+                    var output_p =  document.getElementById("output");
+                    output_p.innerHTML = decrypted_message;
+                }
+
+                function encrypt(key, message){
+                     var msg_len = message.length;
+                     var key_len = key.length;
+                     var encrypted_message = "";
+                     for(var i=0; i < msg_len; i++){
+                        if(message[i]!=" "){
+                            var char_code = message.charCodeAt(i);
+                            var hash_r = (char_code*key)%128;
+                            var hash_q = Math.floor((char_code*key)/128);
+                            hash_q = hash_q.toString();
+                            for(var j=0; j < hash_q.length;j++){
+                                var temp = String.fromCharCode(parseInt(hash_q[j])+65);
+                                encrypted_message = encrypted_message + temp;
+                        }
+                        encrypted_message = encrypted_message + hash_r;
+                        encrypted_message = encrypted_message + " ";
+                     }
+                        else{
+                            encrypted_message = encrypted_message + "/";
+                        }
+                    }
+                     encrypted_message = encrypted_message + "Z";
+                     return encrypted_message;
+                }
+
+                function decrypt(key, encrypted_message){
+                     var emsg_len = encrypted_message.length;
+                     var message = "";
+                     var code_a = "";
+                     var code_n = "";
+                     for(var i=0; i < emsg_len; i++){
+                        if(encrypted_message[i]!="/"){
+                            if(encrypted_message[i]==" "){
+                                message = message + String.fromCharCode((parseInt(code_a)*128 + parseInt(code_n))/key);
+                                code_a = "";
+                                code_n = "";
+                            }
+                            else{
+                                if(isNaN(encrypted_message[i])){
+                                var char_code = encrypted_message.charCodeAt(i) - 65;
+                                code_a = code_a + char_code;   
+                                }
+                                else{
+                                    code_n = code_n*10 + parseInt(encrypted_message[i]);
+                                }
+                            }
+                        }
+                        else{
+                            message = message + " ";
+                        }
+                    }
+                     return message;
+                }
+
+            </script>
+    </footer>
+    <!-- Footer End -->
+
+</html>
+<!-- HTML End -->
